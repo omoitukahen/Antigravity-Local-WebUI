@@ -1,0 +1,32 @@
+└ Models & Quota
+
+GEMINI MODELS
+  Models within this group: Gemini Flash, Gemini Pro
+
+  Weekly Limit Remaining
+    [██████████████████████████████████████████████████] 99.99%
+    Refreshes in 167h 39m
+
+  Five Hour Limit Remaining
+    [██████████████████████████████████████████████████] 99.97%
+    Refreshes in 4h 39m
+
+CLAUDE AND GPT MODELS
+  Models within this group: Claude Opus, Claude Sonnet, GPT-OSS
+
+  Weekly Limit Remaining
+    [██████████████████████████████████████████████████] 100.00%
+    Quota available
+
+  Five Hour Limit Remaining
+    [██████████████████████████████████████████████████] 100.00%
+    Quota available
+
+GEMINI 4 ARGON
+  For paid Pro plans, Argon quota is separate.
+
+  Gemini 4 Argon Weekly Limit
+    [█████████████████████████████████████████████████░] 98.38%
+    Refreshes in 167h 25m
+
+  Within each group, models share a weekly limit and a 5-hour limit.

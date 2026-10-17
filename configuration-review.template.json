@@ -1,0 +1,20 @@
+{
+  "fingerprint": null,
+  "auth_method": null,
+  "auth_evidence": null,
+  "endpoint": null,
+  "proxy_overrides": null,
+  "loading_sources_verified": false,
+  "loading_sources": {
+    "hooks": null,
+    "plugins": null,
+    "mcp": null,
+    "sidecars": null,
+    "skills_and_rules": null
+  },
+  "executable_customizations": null,
+  "watch_roots": [],
+  "effort": null,
+  "effort_evidence": null,
+  "review_reference": null
+}

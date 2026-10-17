@@ -1,0 +1,9 @@
+/.venv/
+/data/
+/validation-results/
+/exports/
+__pycache__/
+*.py[cod]
+/.pytest_cache/
+/webui.local.json
+/releases/

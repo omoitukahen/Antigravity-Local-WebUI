@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; frame-src 'self' about:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>llama.cpp JSONL → HTML</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI","Yu Gothic",Meiryo,sans-serif;color:#202936;background:#f3f6fa;line-height:1.7;color-scheme:light}
+*{box-sizing:border-box}body{margin:0}.container{max-width:1000px;margin:auto;padding:clamp(18px,4vw,48px)}
+h1{font-size:clamp(1.5rem,4vw,2rem);line-height:1.4;margin:0 0 .6em;color:#15253b}p{margin:.6em 0 1.2em}
+.panel{background:#fff;border:1px solid #d4dde7;border-radius:12px;padding:clamp(18px,3vw,28px);margin:22px 0}
+.controls{display:flex;flex-wrap:wrap;align-items:end;gap:18px}label{display:flex;flex-direction:column;gap:6px;font-weight:600;min-width:0}
+.file{flex:1 1 260px}input,select,button{font:inherit;max-width:100%}input{font-size:.95rem}select,button{padding:10px 16px;border-radius:8px;border:1px solid #b6c9e0;background:#fff}
+button{background:#145eb1;color:#fff;border-color:#145eb1;font-weight:650;cursor:pointer}button:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid #6fa8e8;outline-offset:3px}.note{font-size:.9rem;color:#53657a;margin:18px 0 0}
+#summary{overflow-wrap:anywhere;margin:18px 0 0}#error{color:#9b2525;background:#fff0f0;padding:12px;border-radius:8px;overflow-wrap:anywhere}
+h2{font-size:1.1rem;margin:24px 0 10px}iframe{display:block;width:100%;height:65vh;min-height:360px;border:1px solid #d4dde7;border-radius:10px;background:#fff}[hidden]{display:none!important}
+@media(max-width:480px){.controls{align-items:stretch}button{width:100%}}
+</style>
+</head>
+<body>
+<main class="container">
+<h1>llama.cpp JSONL → HTML</h1>
+<p>テスト文章や会話を、スマホ・PCで読める1つのHTMLに。</p>
+<section class="panel" aria-label="変換と保存">
+<div class="controls">
+<label class="file">1. JSONLを選択<input id="jsonl" type="file" accept=".jsonl,application/x-ndjson"></label>
+<label>2. 出力内容<select id="mode"><option value="answers">回答のみ</option><option value="conversation">会話全体</option></select></label>
+<button id="save" type="button" disabled>HTMLを保存</button>
+</div>
+<p class="note">llama.appの会話エクスポートに対応（UTF-8・16MiB以下）。現在の分岐を出力し、思考過程・システムプロンプト・計測値は含めません。</p>
+<p class="note">ファイルはブラウザー内で変換します。保存したHTMLだけを他の端末へコピーすると、オフラインでも読めます。</p>
+<p id="summary" role="status" aria-live="polite"></p>
+<p id="error" role="alert" hidden></p>
+</section>
+<h2>保存されるHTMLのプレビュー</h2>
+<iframe id="preview" title="読み物用HTMLのプレビュー" sandbox="" referrerpolicy="no-referrer" hidden></iframe>
+<noscript>変換するにはブラウザーのJavaScriptを有効にしてください。</noscript>
+</main>
+<script src="static/vendor/marked.js"></script>
+<script src="static/vendor/purify.js"></script>
+<script src="static/reading-export.js"></script>
+<script src="static/llama-jsonl.js"></script>
+<script src="static/llama-jsonl-ui.js"></script>
+</body>
+</html>

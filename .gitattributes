@@ -1,0 +1,2 @@
+# Preserve the bundled upstream JavaScript bytes and manifest hashes on Windows.
+static/vendor/*.js -text

@@ -1,0 +1,66 @@
+{
+  "schema_version":2,
+  "app":"Antigravity Local WebUI",
+  "read":[
+    "Run freshness check first; STALE/error -> reread current source/tests.",
+    "routes -> selected modules -> source/tests; detail only for edges/flows/API/storage/evidence.",
+    "Paths are repo-relative. Static discovery aid, not live status/acceptance or a complete call graph."
+  ],
+  "check":".venv/Scripts/python.exe scripts/check_architecture_freshness.py",
+  "detail":"docs/architecture-agent-detail.json",
+  "runtime":"Windows; Python3.14/FastAPI/Uvicorn/SQLite/pywin32; static JS; localhost only; 1 active run; no queue/auto-resend.",
+  "entrypoints":{
+    "Start-WebUI.bat":"Start-WebUI.ps1 -> launch.py",
+    "Start-WebUI-Mock.bat":"mock CLI; no inference",
+    "Stop-WebUI.bat":"authenticated shutdown",
+    "diagnose.py":"explicit models query; no inference prompt",
+    "agweb/validation.py":"python -m agweb.validation; live run requires separate approval/budget",
+    "Convert-Llama-JSONL.html":"offline JSONL -> HTML"
+  },
+  "routes":{
+    "画面・履歴検索・コピー・下書き":["ui","api","store","browser_harness"],
+    "会話の指示と保存先ボタン":["ui","api","store","controller"],
+    "直接.txt出力・連番・ダウンロード":["ui","api","store","controller","supervisor","policy","output"],
+    "停止・接続切れ・子プロセス終了":["api","controller","supervisor","windows"],
+    "送信ロック・CLI更新・受入証跡":["api","gate","config","validation"],
+    "モデル一覧・クォータ":["ui","diagnostics","quota","quota_worker","conpty"],
+    "Markdown/HTML保存・JSONL変換":["ui","reading_export","llama_converter"],
+    "会話削除と既存データ移行":["api","store","output"],
+    "初回導入・配布ZIP":["onboarding","config","startup","gate","diagnostics","quota","api","ui"]
+  },
+  "modules":{
+    "startup":{"owns":"Launch/shutdown; single-instance mutex; localhost port/token/runtime.json; Uvicorn.","process":"launcher / server","paths":["Start-WebUI.bat","Start-WebUI-Mock.bat","Start-WebUI.ps1","Stop-WebUI.bat","Stop-WebUI.ps1","Setup.ps1","launch.py","Setup.bat"],"tests":[]},
+    "config":{"owns":"APP_ROOT vs Config.root/data; CLI path/env overrides; timeouts/hash.","process":"server","paths":["agweb/config.py","requirements.lock.txt"],"tests":[]},
+    "ui":{"owns":"History/search/title/star; drafts/instructions/mode; render/copy/export; events/lease/heartbeat.","process":"browser","paths":["static/index.html","static/app.js","static/style.css"],"tests":["tests/test_conversation_features.cjs","tests/test_conversation_delete.cjs","tests/test_output_guidance.cjs","tests/test_text_output.cjs","tests/test_model_availability.cjs","tests/test_quota_dialog.cjs"]},
+    "api":{"owns":"FastAPI auth/Host/Origin/size boundary; REST; send gates; downloads/Explorer.","process":"server","paths":["agweb/server.py"],"tests":["tests/test_api.py","tests/test_conversation_features.py","tests/test_instruction_files.py","tests/test_output_settings.py","tests/test_text_acceptance_review.py","tests/test_conversation_delete.py"]},
+    "store":{"owns":"Sole SQLite writer; migrations/revision/idempotent reservation/events; attachments/instructions/delete recovery/output metadata.","process":"server","paths":["agweb/store.py"],"tests":["tests/test_conversation_features.py","tests/test_instruction_files.py","tests/test_conversation_delete.py","tests/test_output_settings.py","tests/test_text_output.py"]},
+    "controller":{"owns":"Workspace/hooks/AGENTS sync; output instructions; supervisor IPC; delta persistence batched at 75ms / 8KiB, flush before other events.","process":"server","paths":["agweb/controller.py"],"tests":["tests/test_supervisor.py","tests/test_instruction_files.py","tests/test_text_output.py","tests/test_long_generation.py"]},
+    "supervisor":{"owns":"Own CLI Job; correlate Hook/stdout; enforce deadlines/heartbeat/limits; stop/validate output/emit terminal.","process":"supervisor subprocess","paths":["agweb/supervisor.py"],"tests":["tests/test_supervisor.py","tests/test_faults.py","tests/test_text_output.py"]},
+    "hook":{"owns":"PreInvocation/PreToolUse relay via authenticated AF_PIPE; return decision/argument replacement.","process":"CLI hook subprocess","paths":["agweb/hook.py"],"tests":["tests/test_supervisor.py","tests/test_faults.py","tests/test_text_output.py"]},
+    "policy":{"owns":"Strict known tool/argument allowlist; scoped one-shot write_to_file.","process":"supervisor subprocess","paths":["agweb/policy.py"],"tests":["tests/test_supervisor.py","tests/test_text_output.py"]},
+    "output":{"owns":"Registered folder/name/link checks; collision suffix; nonempty UTF-8 <=1MiB; file size/hash/state.","process":"server / supervisor","paths":["agweb/output.py"],"tests":["tests/test_text_output.py","tests/test_output_settings.py"]},
+    "windows":{"owns":"Mutex/JobProcess; create suspended -> assign Job -> resume; handle allowlist; kill/active count.","process":"server / worker subprocess","paths":["agweb/windows.py"],"tests":["tests/test_windows.py","tests/test_faults.py"]},
+    "gate":{"owns":"Fingerprint source/UI/runtime/config/global instructions/rules/skills/plugins; prefer local consent without legacy fallback; preserve legacy acceptance modes. Fresh before sends; cached on status polls.","process":"server","paths":["agweb/gate.py","configuration-review.template.json"],"tests":["tests/test_acceptance.py","tests/test_api.py","tests/test_text_acceptance_review.py","tests/test_long_generation.py"]},
+    "diagnostics":{"owns":"Explicit model-list query in bounded Job; cache/diagnostic report; no inference prompt.","process":"server","paths":["diagnose.py","agweb/diagnostics.py"],"tests":["tests/test_acceptance.py"]},
+    "quota":{"owns":"Verify local consent or legacy config; dedicated explicitly trusted local-setup cwd; parse recognized usage fields.","process":"server","paths":["agweb/quota.py"],"tests":["tests/test_quota.py","tests/test_quota_api.py"]},
+    "quota_worker":{"owns":"ConPTY CLI /usage; parent/deadline/Job cleanup supervision.","process":"quota worker subprocess","paths":["agweb/quota_worker.py"],"tests":["tests/test_quota_worker.py"]},
+    "conpty":{"owns":"Windows pseudoconsole + JobProcess for TUI.","process":"quota worker subprocess","paths":["agweb/conpty.py"],"tests":["tests/test_conpty.py"]},
+    "validation":{"owns":"Explicit live-test authorization/consume-before-launch ledger/receipts/finalize; separate from normal sends.","process":"explicit validation command","paths":["agweb/validation.py"],"tests":["tests/test_acceptance.py"]},
+    "reading_export":{"owns":"Shared Markdown sanitization + standalone reading HTML; bundled Marked/DOMPurify.","process":"browser","paths":["static/reading-export.js","static/vendor/marked.js","static/vendor/purify.js","static/vendor/manifest.json","static/vendor/marked-LICENSE.txt","static/vendor/dompurify-LICENSE.txt"],"tests":["tests/test_markdown_export.cjs","tests/test_html_export.cjs"]},
+    "llama_converter":{"owns":"Offline llama.app JSONL current-branch parse -> preview/download HTML; no server/model.","process":"offline browser","paths":["Convert-Llama-JSONL.html","static/llama-jsonl.js","static/llama-jsonl-ui.js"],"tests":["tests/test_llama_jsonl.cjs"]},
+    "mock":{"owns":"CLI/usage substitutes; Hook ordering/output/fault/stop scenarios; no real model.","process":"mock CLI subprocess","paths":["tests/mock_cli.py","tests/mock_usage.py"],"tests":["tests/test_supervisor.py","tests/test_text_output.py","tests/test_quota_worker.py"]},
+    "browser_harness":{"owns":"Node DOM/API/clipboard harness; distinct from real browser acceptance.","process":"test only","paths":["tests/webui_harness.cjs"],"tests":["tests/test_conversation_features.cjs","tests/test_output_guidance.cjs","tests/test_text_output.cjs"]},
+    "onboarding":{"owns":"Per-install configuration review/connection check/human consent; never live acceptance; committed allowlist ZIP build.","process":"server / explicit setup or build command","paths":["agweb/onboarding.py","static/setup.js","Setup.bat","scripts/build-release.ps1","scripts/release-files.txt","LICENSE","THIRD_PARTY_NOTICES.md","CHANGELOG.md","VERSION"],"tests":["tests/test_distribution.py","tests/test_setup.cjs","tests/test_setup_scripts.py"]}
+  },
+  "constraints":[
+    "DB is canonical; only server writes SQLite; instructions -> per-conversation AGENTS.md on save/prelaunch.",
+    "First reservation freezes model/effort/instructions/output_mode; revision detects conflicts; request_id prevents duplicate launch.",
+    "text_file: one validated write_to_file/auto_approve; no overwrite/edit/delete/exec/local reads; external txt survives conversation deletion.",
+    "File success requires process cleanup + actual UTF-8/size/hash validation; never trust SUCCESS text alone.",
+    "File body excluded from chat/events/DB answer/search/reading exports; instructions excluded from reading exports.",
+    "API Bearer != X-Run-Owner; history replay/reload never sends; unconfirmed Job cleanup retains lock.",
+    "Current owner's live HTTP stream renews browser lease; keepalive not persisted; observer/rotated owner cannot renew. Heartbeat and disconnect timeout remain. UI delta rendering throttled at 100ms (tests/test_long_generation.cjs).",
+    "Normal-mode write_to_file -> output_mode_mismatch; local Job stop != cloud cancellation; logical send != internal model-call count.",
+    "Index freshness != runtime gate fingerprint/acceptance/live-test authorization."
+  ]
+}
